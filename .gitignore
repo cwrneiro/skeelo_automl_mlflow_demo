@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Notebooks locais
+*.ipynb_checkpoints
+
+# Ambientes
+.venv/
+venv/
+.env
+
+# Databricks
+.databricks/
+*.db
+spark-warehouse/
+
+# MLflow local
+mlruns/
+mlartifacts/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Dados gerados (caso alguém rode geração local)
+data/
+*.csv
+*.parquet
+*.delta
+
+# Saídas de notebook
+*.html
+*.log
