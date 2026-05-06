@@ -19,10 +19,11 @@
 # MAGIC - **Scale-to-zero**: se não houver tráfego, o endpoint desaloca o
 # MAGIC   compute (custo zero), em troca de uma **cold start** de cerca de
 # MAGIC   30 segundos na primeira chamada após a idle.
-# MAGIC - **Inference Tables**: o serving grava automaticamente cada
-# MAGIC   request e response em uma tabela Delta no schema configurado, com
-# MAGIC   nome `<schema>.<prefix>_payload`. Esse log é a base para o
-# MAGIC   monitoring (notebook 07).
+# MAGIC - **Inference Tables (via AI Gateway)**: o serving grava
+# MAGIC   automaticamente cada request e response em uma tabela Delta no
+# MAGIC   schema configurado, com nome `<schema>.<prefix>_payload`. Esse
+# MAGIC   log é a base para o monitoring (notebook 07). O caminho legado
+# MAGIC   `AutoCaptureConfigInput` foi descontinuado — usamos o `AiGatewayConfig`.
 # MAGIC
 # MAGIC ## Aviso de tempo
 # MAGIC
@@ -59,7 +60,8 @@ from databricks.sdk import WorkspaceClient
 from databricks.sdk.service.serving import (
     EndpointCoreConfigInput,
     ServedEntityInput,
-    AutoCaptureConfigInput,
+    AiGatewayConfig,
+    AiGatewayInferenceTableConfig,
 )
 import mlflow
 
@@ -91,35 +93,36 @@ served_entity = ServedEntityInput(
     scale_to_zero_enabled=True,
 )
 
-# `AutoCaptureConfigInput` ativa Inference Tables. O Databricks cria a
-# tabela `<catalog>.<schema>.<table_name_prefix>_payload` automaticamente
-# após a primeira chamada ao endpoint (com latência de ~5-10 min até o
-# primeiro flush — ver notebook 07).
-auto_capture = AutoCaptureConfigInput(
-    catalog_name=config.catalog,
-    schema_name=config.schema,
-    table_name_prefix=INFERENCE_TABLE_PREFIX,
-    enabled=True,
+# `AiGatewayConfig` ativa as Inference Tables via AI Gateway. (O caminho
+# antigo via `AutoCaptureConfigInput` foi descontinuado: endpoints novos
+# precisam usar AI Gateway.) O Databricks cria a tabela
+# `<catalog>.<schema>.<table_name_prefix>_payload` automaticamente após a
+# primeira chamada ao endpoint (latência de ~5-10 min até o primeiro
+# flush — ver notebook 07).
+ai_gateway = AiGatewayConfig(
+    inference_table_config=AiGatewayInferenceTableConfig(
+        catalog_name=config.catalog,
+        schema_name=config.schema,
+        table_name_prefix=INFERENCE_TABLE_PREFIX,
+        enabled=True,
+    )
 )
 
-# `EndpointCoreConfigInput` agrega served_entities + auto_capture_config.
-# `name` aqui é redundante quando passamos via create_and_wait(name=...)
-# — o SDK aceita ambos por compatibilidade histórica, mas omitimos para
-# evitar duplicação.
+# `EndpointCoreConfigInput` agrega só served_entities. A AI Gateway é
+# passada como kwarg separado em create_and_wait/put_ai_gateway.
 endpoint_config = EndpointCoreConfigInput(
     served_entities=[served_entity],
-    auto_capture_config=auto_capture,
 )
 
+itc = ai_gateway.inference_table_config
 print("Config preparada:")
 print(f"  served_entities = [{served_entity.name} -> "
       f"{served_entity.entity_name} v{served_entity.entity_version}, "
       f"size={served_entity.workload_size}, "
       f"scale_to_zero={served_entity.scale_to_zero_enabled}]")
-print(f"  auto_capture    = catalog={auto_capture.catalog_name}, "
-      f"schema={auto_capture.schema_name}, "
-      f"prefix={auto_capture.table_name_prefix}, "
-      f"enabled={auto_capture.enabled}")
+print(f"  ai_gateway.inference_table = catalog={itc.catalog_name}, "
+      f"schema={itc.schema_name}, prefix={itc.table_name_prefix}, "
+      f"enabled={itc.enabled}")
 
 # COMMAND ----------
 # DBTITLE 1,Criar ou atualizar o endpoint (idempotente)
@@ -137,14 +140,17 @@ except Exception as e:
     print(f"  (Detalhe: {type(e).__name__}: {e})")
 
 if endpoint_existe:
-    # `update_config_and_wait` aceita served_entities e auto_capture_config
-    # diretamente (não a wrapper EndpointCoreConfigInput). Veja a doc do
-    # SDK Python para a forma canônica.
+    # No update, served_entities e ai_gateway são aplicados em chamadas
+    # separadas: `update_config_and_wait` para os modelos servidos e
+    # `put_ai_gateway` para a configuração de Inference Tables.
     print("Aguardando update do endpoint... (pode levar alguns minutos)")
     w.serving_endpoints.update_config_and_wait(
         name=config.endpoint_name,
         served_entities=endpoint_config.served_entities,
-        auto_capture_config=endpoint_config.auto_capture_config,
+    )
+    w.serving_endpoints.put_ai_gateway(
+        name=config.endpoint_name,
+        inference_table_config=ai_gateway.inference_table_config,
     )
     print(f"Endpoint '{config.endpoint_name}' atualizado.")
 else:
@@ -152,6 +158,7 @@ else:
     w.serving_endpoints.create_and_wait(
         name=config.endpoint_name,
         config=endpoint_config,
+        ai_gateway=ai_gateway,
     )
     print(f"Endpoint '{config.endpoint_name}' criado e pronto.")
 
