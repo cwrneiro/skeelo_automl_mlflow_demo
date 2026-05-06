@@ -2,7 +2,7 @@
 # MAGIC %md
 # MAGIC # 99 - Teardown da demo
 # MAGIC
-# MAGIC **Rodar este notebook ao final da demo é obrigatório.**
+# MAGIC **Rode este notebook ao final da demo — é obrigatório.**
 # MAGIC
 # MAGIC O endpoint de Mosaic AI Model Serving (criado no notebook 06)
 # MAGIC continua provisionado mesmo sem tráfego — `scale_to_zero=true`
@@ -10,8 +10,8 @@
 # MAGIC workspace mantém metadata e reservas mínimas associadas. A maneira
 # MAGIC correta de não pagar mais é **deletar o endpoint**.
 # MAGIC
-# MAGIC Este notebook também oferece (opcional) o drop do schema do
-# MAGIC participante, para limpar tabelas e o modelo registrado em UC.
+# MAGIC Este notebook também oferece (opcional) o drop do seu schema,
+# MAGIC para limpar tabelas e o modelo registrado em UC.
 # MAGIC
 # MAGIC ## Notebook anterior
 # MAGIC
@@ -27,12 +27,12 @@
 get_widgets(dbutils, spark)
 
 # Widget extra: confirmação explícita para dropar o schema. Default false
-# por segurança — o usuário precisa marcar `true` deliberadamente.
+# por segurança — você precisa marcar `true` deliberadamente.
 dbutils.widgets.dropdown(
     "confirm_drop_schema",
     "false",
     ["false", "true"],
-    "Dropar o schema do participante? (CASCADE)",
+    "Dropar seu schema? (CASCADE)",
 )
 
 config = resolve_config(dbutils, spark)

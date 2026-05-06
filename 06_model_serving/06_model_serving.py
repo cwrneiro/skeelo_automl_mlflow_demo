@@ -124,7 +124,7 @@ print(f"  auto_capture    = catalog={auto_capture.catalog_name}, "
 # COMMAND ----------
 # DBTITLE 1,Criar ou atualizar o endpoint (idempotente)
 
-# Idempotência: o usuário pode rodar este notebook várias vezes (ex: após
+# Idempotência: você pode rodar este notebook várias vezes (ex: após
 # treinar uma versão nova). Se o endpoint já existe, fazemos `update`
 # em vez de tentar criar de novo (que falharia com "already exists").
 try:

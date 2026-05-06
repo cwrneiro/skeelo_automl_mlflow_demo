@@ -76,7 +76,7 @@ if n_rows == 0:
 # COMMAND ----------
 # DBTITLE 1,Diretório do experimento (por usuário)
 
-# Usamos o e-mail do usuário corrente para criar o diretório do experimento.
+# Usamos o e-mail do `current_user()` para criar o diretório do experimento.
 # Em DBR ML, `dbutils.notebook.entry_point.getDbutils().notebook().getContext()`
 # expõe o contexto. Forma robusta via Spark:
 user_email = (
@@ -130,7 +130,7 @@ for k, v in sorted(best.metrics.items()):
 best_run_id = best.mlflow_run_id
 
 # Quando este notebook roda como Job, o próximo task pode ler o run_id via
-# task values (sem precisar do usuário copiar e colar).
+# task values (sem precisar copiar e colar manualmente).
 try:
     dbutils.jobs.taskValues.set(key="best_run_id", value=best_run_id)
     print(f"taskValues['best_run_id'] = {best_run_id}")

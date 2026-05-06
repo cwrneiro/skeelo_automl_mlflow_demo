@@ -2,8 +2,8 @@
 # MAGIC %md
 # MAGIC # 03a - AutoML pela UI (walkthrough)
 # MAGIC
-# MAGIC Este notebook **não executa** o AutoML — ele guia o participante a
-# MAGIC rodar o AutoML pela **UI do workspace** sobre a tabela
+# MAGIC Este notebook **não executa** o AutoML — ele te guia para rodar
+# MAGIC o AutoML pela **UI do workspace** sobre a tabela
 # MAGIC `customer_features` criada em `02_eda`.
 # MAGIC
 # MAGIC O equivalente programático está em `03b_automl_sdk.py`. Os dois são

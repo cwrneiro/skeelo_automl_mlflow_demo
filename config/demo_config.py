@@ -22,7 +22,7 @@ import re
 # COMMAND ----------
 # DBTITLE 1,Constantes de contrato
 
-# Tabelas brutas (geradas em 01_data_generation, no schema do participante)
+# Tabelas brutas (geradas em 01_data_generation, no seu schema)
 TABLE_USERS = "users"
 TABLE_BOOKS = "books"
 TABLE_READING_EVENTS = "reading_events"
@@ -91,10 +91,10 @@ def _current_user(spark) -> str:
 
 
 def _config_file_path(spark) -> str:
-    """Caminho do arquivo de configuração persistida (no Workspace do usuário).
+    """Caminho do arquivo de configuração persistida (no seu Workspace).
 
     O arquivo é gravado por `00_setup` e lido pelos demais notebooks como
-    *default* dos widgets, evitando que o usuário precise repreencher a
+    *default* dos widgets, evitando que você precise repreencher a
     configuração em cada notebook.
     """
     email = _current_user(spark)
@@ -111,7 +111,7 @@ def _load_saved_config(spark) -> dict:
 
 
 def save_config(config: "DemoConfig", spark) -> str:
-    """Persiste a configuração no Workspace do usuário (chamado por `00_setup`).
+    """Persiste a configuração no seu Workspace (chamado por `00_setup`).
 
     Os demais notebooks usam esse arquivo como *default* ao criar widgets.
     Retorna o caminho do arquivo gravado.
@@ -147,7 +147,7 @@ def get_widgets(dbutils, spark) -> None:
     dbutils.widgets.text(
         "schema",
         saved.get("schema", f"automl_demo_{user_short}"),
-        "Schema do participante",
+        "Seu schema",
     )
     dbutils.widgets.text(
         "endpoint_name",

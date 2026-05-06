@@ -282,7 +282,7 @@ else:
 # MAGIC - Distribuição das previsões capturadas.
 # MAGIC - Esboço de drift (treino vs. produção) em uma feature numérica.
 # MAGIC
-# MAGIC Em produção real, recomendamos **Lakehouse Monitoring** sobre a
+# MAGIC Em produção real, use **Lakehouse Monitoring** sobre a
 # MAGIC Inference Table — ele constrói o profile, calcula drift e métricas
 # MAGIC de qualidade ao longo do tempo e gera dashboard sem código.
 # MAGIC

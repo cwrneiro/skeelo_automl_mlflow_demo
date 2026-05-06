@@ -2,8 +2,8 @@
 # MAGIC %md
 # MAGIC # 00 - Setup do ambiente
 # MAGIC
-# MAGIC Este é o **primeiro notebook** da demo. Seu objetivo é validar que o
-# MAGIC participante tem permissões mínimas no Unity Catalog para criar o schema
+# MAGIC Este é o **primeiro notebook** da demo. Seu objetivo é validar que
+# MAGIC você tem as permissões mínimas no Unity Catalog para criar o schema
 # MAGIC da demo, criar tabelas Delta e usar as bibliotecas necessárias do
 # MAGIC runtime DBR 17.3 LTS ML.
 # MAGIC
@@ -25,7 +25,7 @@
 # MAGIC **Pré-requisitos**:
 # MAGIC - Cluster ou warehouse com runtime **DBR 17.3 LTS ML** (ou superior).
 # MAGIC - Permissões `USE CATALOG` e `CREATE SCHEMA` no catálogo informado.
-# MAGIC - Permissão `CREATE TABLE` no schema do participante.
+# MAGIC - Permissão `CREATE TABLE` no seu schema.
 
 # COMMAND ----------
 
@@ -142,8 +142,8 @@ print(
 # COMMAND ----------
 # DBTITLE 1,Persistir configuração para os demais notebooks
 
-# Grava a configuração resolvida num arquivo no Workspace do usuário. Os demais
-# notebooks lerão esse arquivo como *default* dos widgets, então o participante
+# Grava a configuração resolvida num arquivo no seu Workspace. Os demais
+# notebooks lerão esse arquivo como *default* dos widgets, então você
 # não precisa repreencher catalog/schema/endpoint em cada um.
 saved_path = save_config(config, spark)
 print(f"Configuração persistida em: {saved_path}")
@@ -157,7 +157,7 @@ print(
 # MAGIC %md
 # MAGIC ## Setup concluído
 # MAGIC
-# MAGIC Permissões validadas, schema do participante pronto e configuração
+# MAGIC Permissões validadas, seu schema pronto e configuração
 # MAGIC persistida no Workspace.
 # MAGIC
 # MAGIC **Próximo passo**: rodar `01_data_generation/01_data_generation` para

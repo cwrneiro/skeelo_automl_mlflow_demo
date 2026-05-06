@@ -157,7 +157,7 @@ print(f"OK: {n:,} linhas escritas em {scored_table}")
 # MAGIC - **Modo pyfunc**: carregar e usar o modelo como função Python local.
 # MAGIC - **Modo Spark UDF**: paralelizar o scoring sobre toda a feature
 # MAGIC   table e persistir em `customer_features_scored` (tabela Delta no
-# MAGIC   schema do participante).
+# MAGIC   seu schema).
 # MAGIC
 # MAGIC **Próximo passo**: rodar `06_model_serving/06_model_serving` para
 # MAGIC servir o mesmo modelo via REST com **Mosaic AI Model Serving** e

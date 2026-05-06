@@ -2,9 +2,9 @@
 
 Demonstração standalone de **AutoML, MLflow Model Registry, Model Serving e Inference Tables** no Databricks, em PT-BR. Caso de uso: predizer **reativação de clientes inativos** numa plataforma genérica de audiobooks/ebooks.
 
-A demo é executada num workspace Databricks (cada participante usa seu próprio schema dentro de um catálogo Unity Catalog compartilhado) e cobre, do zero ao deploy:
+A demo é executada num workspace Databricks (você usa seu próprio schema dentro de um catálogo Unity Catalog compartilhado) e cobre, do zero ao deploy:
 
-1. **Setup** do schema do participante.
+1. **Setup** do seu schema.
 2. **Geração de dados mock** (~10k usuários, ~500k eventos) em Delta.
 3. **EDA** e construção da feature table com label.
 4. **AutoML** — pela UI e pelo SDK Python.
@@ -72,7 +72,7 @@ O endpoint de Model Serving usa workload size **CPU Small**, gerenciado pelo Dat
 Cada notebook abre com 4 widgets criados por `config/demo_config.py`:
 
 - `catalog` — catálogo UC (obrigatório).
-- `schema` — schema do participante.
+- `schema` — seu schema.
 - `endpoint_name` — nome do endpoint Model Serving.
 - `snapshot_date` — data de corte para o label (vazio = automático).
 

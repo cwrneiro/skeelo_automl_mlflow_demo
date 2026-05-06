@@ -88,7 +88,7 @@ Apenas usuários **elegíveis** (inativos no corte) entram na `customer_features
 
 - Nome: `config.endpoint_name` (default `automl-reactivation-<user_curto>`)
 - Tipo: serverless, **CPU Small**, **scale-to-zero=true**
-- **Inference Tables ativadas** com prefix `INFERENCE_TABLE_PREFIX = "inference_log"` no schema do participante
+- **Inference Tables ativadas** com prefix `INFERENCE_TABLE_PREFIX = "inference_log"` no seu schema
 - Model: aliased reference `models:/<catalog>.<schema>.reactivation_model@Champion`
 
 ---

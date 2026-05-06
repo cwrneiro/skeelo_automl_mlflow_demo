@@ -3,7 +3,7 @@
 # MAGIC # 01 - Geração de dados mock
 # MAGIC
 # MAGIC Este notebook cria as **quatro tabelas Delta brutas** da demo, todas no
-# MAGIC schema do participante (`config.schema_full`):
+# MAGIC seu schema (`config.schema_full`):
 # MAGIC
 # MAGIC - `users` — cadastro de clientes (~10.000 linhas).
 # MAGIC - `books` — catálogo de livros/audiobooks (~2.000 linhas).
@@ -11,9 +11,9 @@
 # MAGIC - `subscriptions` — assinaturas dos clientes premium.
 # MAGIC
 # MAGIC **Determinismo**: a geração usa `numpy.random.default_rng(RANDOM_SEED)`
-# MAGIC com seed fixa (`RANDOM_SEED = 42`). Todos os participantes da demo geram
-# MAGIC exatamente o mesmo dataset, o que garante resultados comparáveis em
-# MAGIC AutoML, modelo, métricas e inferência.
+# MAGIC com seed fixa (`RANDOM_SEED = 42`). A demo gera sempre o mesmo dataset,
+# MAGIC o que garante resultados comparáveis em AutoML, modelo, métricas e
+# MAGIC inferência entre execuções diferentes.
 # MAGIC
 # MAGIC **Janela temporal**: eventos distribuídos pelos últimos ~24 meses até
 # MAGIC **hoje**, com sazonalidade (boost em dezembro, janeiro e julho).
