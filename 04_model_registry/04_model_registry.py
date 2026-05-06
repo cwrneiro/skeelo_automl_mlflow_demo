@@ -228,12 +228,18 @@ versions = client.search_model_versions(
     f"name='{config.model_full_name}'"
 )
 
+# No UC, search_model_versions não popula aliases nas versões retornadas — é
+# preciso chamar get_model_version para cada uma para obter a lista de aliases.
 print(f"Versões registradas em {config.model_full_name}:")
 print("-" * 72)
 for v in sorted(versions, key=lambda x: int(x.version)):
-    aliases = list(v.aliases) if v.aliases else []
+    full = client.get_model_version(
+        name=config.model_full_name, version=v.version
+    )
+    aliases = list(full.aliases) if full.aliases else []
+    aliases_str = ", ".join(aliases) if aliases else "-"
     print(
-        f"  v{v.version:<3s}  aliases={aliases:<30}  run_id={v.run_id}"
+        f"  v{v.version:<3s}  aliases={aliases_str:<30}  run_id={v.run_id}"
     )
 
 # COMMAND ----------
