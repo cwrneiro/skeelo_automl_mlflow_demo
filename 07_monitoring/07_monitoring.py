@@ -19,11 +19,11 @@
 # MAGIC |---|---|---|
 # MAGIC | `databricks_request_id` | STRING | id do request gerado pelo serving |
 # MAGIC | `client_request_id` | STRING | id opcional fornecido pelo cliente |
-# MAGIC | `date` | DATE | data UTC em que o request foi recebido |
+# MAGIC | `request_date` | DATE | data UTC em que o request foi recebido |
 # MAGIC | `timestamp_ms` | LONG | epoch ms |
 # MAGIC | `status_code` | INT | HTTP status code da resposta |
 # MAGIC | `sampling_fraction` | DOUBLE | fração de sampling (0..1) |
-# MAGIC | `execution_time_ms` | LONG | latência do scoring |
+# MAGIC | `execution_duration_ms` | LONG | latência do scoring |
 # MAGIC | `request` | STRING | payload JSON do request |
 # MAGIC | `response` | STRING | payload JSON da resposta |
 # MAGIC | `request_metadata` | MAP<STRING,STRING> | endpoint/model/version |
@@ -98,13 +98,13 @@ if n_rows == 0:
 
 display(spark.sql(f"""
     SELECT
-        date,
+        request_date,
         COUNT(*) AS requests,
         SUM(CASE WHEN status_code = 200 THEN 1 ELSE 0 END) AS ok,
         SUM(CASE WHEN status_code <> 200 THEN 1 ELSE 0 END) AS errors
     FROM {inference_table}
-    GROUP BY date
-    ORDER BY date
+    GROUP BY request_date
+    ORDER BY request_date
 """))
 
 # COMMAND ----------
@@ -114,9 +114,9 @@ display(spark.sql(f"""
     SELECT
         status_code,
         COUNT(*) AS n,
-        percentile_approx(execution_time_ms, 0.50) AS p50_ms,
-        percentile_approx(execution_time_ms, 0.95) AS p95_ms,
-        MAX(execution_time_ms) AS max_ms
+        percentile_approx(execution_duration_ms, 0.50) AS p50_ms,
+        percentile_approx(execution_duration_ms, 0.95) AS p95_ms,
+        MAX(execution_duration_ms) AS max_ms
     FROM {inference_table}
     GROUP BY status_code
     ORDER BY status_code
@@ -145,7 +145,7 @@ predictions_df = (
     spark.table(inference_table)
     .where("status_code = 200")
     .withColumn("resp", F.from_json("response", response_schema))
-    .select("date", F.explode("resp.predictions").alias("prediction"))
+    .select("request_date", F.explode("resp.predictions").alias("prediction"))
 )
 
 print("Estatísticas das previsões capturadas:")
@@ -228,7 +228,7 @@ prod_raw = (
     spark.table(inference_table)
     .where("status_code = 200")
     .withColumn("req", F.from_json("request", request_schema))
-    .select("date", "req.dataframe_split.columns", "req.dataframe_split.data")
+    .select("request_date", "req.dataframe_split.columns", "req.dataframe_split.data")
 )
 
 # Para cada linha do request (cada array em `data`), encontramos o índice
@@ -239,7 +239,7 @@ prod_values = (
     .where("col_idx >= 0")
     .withColumn("row", F.explode("data"))
     .selectExpr(
-        "date",
+        "request_date",
         f"CAST(row[col_idx] AS DOUBLE) AS {drift_feature}",
     )
     .where(F.col(drift_feature).isNotNull())
