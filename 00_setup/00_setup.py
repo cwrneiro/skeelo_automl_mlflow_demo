@@ -140,10 +140,25 @@ print(
 )
 
 # COMMAND ----------
+# DBTITLE 1,Persistir configuração para os demais notebooks
+
+# Grava a configuração resolvida num arquivo no Workspace do usuário. Os demais
+# notebooks lerão esse arquivo como *default* dos widgets, então o participante
+# não precisa repreencher catalog/schema/endpoint em cada um.
+saved_path = save_config(config, spark)
+print(f"Configuração persistida em: {saved_path}")
+print(
+    "Os próximos notebooks (01..99) já vão abrir com esses valores nos "
+    "widgets. Para alterar a configuração global, edite os widgets neste "
+    "notebook 00_setup e rode-o de novo."
+)
+
+# COMMAND ----------
 # MAGIC %md
 # MAGIC ## Setup concluído
 # MAGIC
-# MAGIC Permissões validadas e schema do participante pronto.
+# MAGIC Permissões validadas, schema do participante pronto e configuração
+# MAGIC persistida no Workspace.
 # MAGIC
 # MAGIC **Próximo passo**: rodar `01_data_generation/01_data_generation` para
-# MAGIC gerar as tabelas mock da demo.
+# MAGIC gerar as tabelas mock da demo. Os widgets já virão preenchidos.

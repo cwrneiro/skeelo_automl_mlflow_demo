@@ -6,11 +6,14 @@ Problemas comuns ao rodar a demo, em ordem aproximada de probabilidade.
 
 ## 1. `Widget 'catalog' obrigatório`
 
-**Sintoma**: `00_setup` (ou qualquer notebook) lança `ValueError: Widget 'catalog' obrigatório`.
+**Sintoma**: `00_setup` (ou qualquer notebook posterior) lança `ValueError: Widget 'catalog' obrigatório`.
 
-**Causa**: o widget `catalog` foi deixado vazio.
+**Causa**: o widget `catalog` está vazio. Em `00_setup` isso é esperado na primeira run (você precisa preencher). Nos demais notebooks, isso significa que o `00_setup` não foi rodado nesta sessão / nesse usuário e o arquivo de configuração persistido não foi encontrado.
 
-**Solução**: preencha o widget `catalog` no topo do notebook com um catálogo UC onde você tenha permissão de `CREATE SCHEMA`. Repita em cada notebook (widgets não cruzam fronteira de notebook).
+**Solução**:
+- Se for `00_setup`: preencha o widget `catalog` com um catálogo UC onde você tenha `CREATE SCHEMA` e rode novamente. Ao final, `00_setup` grava a configuração em `/Workspace/Users/<seu_email>/.automl_demo_config.json`.
+- Se for outro notebook: rode `00_setup` antes. Os demais notebooks leem o arquivo persistido como *default* dos widgets.
+- Quer trocar o catálogo no meio da demo? Volte em `00_setup`, ajuste os widgets, rode-o, e abra os outros notebooks de novo (eles vão pegar o valor novo no próximo `get_widgets`).
 
 ---
 

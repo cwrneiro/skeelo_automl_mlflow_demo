@@ -26,6 +26,9 @@ Estrutura padrão de cada notebook:
 4. Corpo do notebook usando **sempre** `config.table("nome")`, `config.model_full_name`, `config.endpoint_name`, etc.
 5. Célula `%md` final com "**próximo passo**: rodar `0X_<nome>`".
 
+**Persistência da configuração** — `00_setup` chama `save_config(config, spark)` ao final, gravando catalog/schema/endpoint/snapshot_date em
+`/Workspace/Users/<email>/.automl_demo_config.json`. `get_widgets` lê esse arquivo (se existir) e usa como *default* dos widgets, eliminando a necessidade de repreencher cada notebook. Apenas `00_setup` persiste; os demais só leem. Para alterar a configuração global, ajuste os widgets em `00_setup` e rode-o de novo.
+
 ---
 
 ## Tabelas (todas em `config.schema_full` = `<catalog>.<schema>`)

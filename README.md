@@ -76,7 +76,9 @@ Cada notebook abre com 4 widgets criados por `config/demo_config.py`:
 - `endpoint_name` — nome do endpoint Model Serving.
 - `snapshot_date` — data de corte para o label (vazio = automático).
 
-Mudou os widgets em um notebook? Eles persistem no notebook, mas **não** propagam para os outros — ajuste em cada um, ou padronize no Repo via Workspace → Settings → Variables se preferir.
+**Você só precisa preencher esses widgets uma vez, em `00_setup`.** Ao terminar, `00_setup` grava a configuração em `/Workspace/Users/<seu_email>/.automl_demo_config.json`. Os demais notebooks abrem com esses valores já preenchidos como *default* dos widgets.
+
+Para alterar a configuração global (ex: trocar de catálogo no meio da demo), volte ao `00_setup`, ajuste os widgets e rode-o de novo.
 
 Detalhes do contrato (schemas das tabelas, definição do label, convenções) em [`docs/contracts.md`](docs/contracts.md).
 Contexto e decisões do projeto em [`docs/briefing.md`](docs/briefing.md).

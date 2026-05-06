@@ -15,6 +15,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, timedelta
+import json
+import os
 import re
 
 # COMMAND ----------
@@ -87,23 +89,75 @@ def _short_user(email: str) -> str:
 def _current_user(spark) -> str:
     return spark.sql("SELECT current_user() AS u").first()["u"]
 
+
+def _config_file_path(spark) -> str:
+    """Caminho do arquivo de configuração persistida (no Workspace do usuário).
+
+    O arquivo é gravado por `00_setup` e lido pelos demais notebooks como
+    *default* dos widgets, evitando que o usuário precise repreencher a
+    configuração em cada notebook.
+    """
+    email = _current_user(spark)
+    return f"/Workspace/Users/{email}/.automl_demo_config.json"
+
+
+def _load_saved_config(spark) -> dict:
+    try:
+        with open(_config_file_path(spark), "r") as f:
+            data = json.load(f)
+        return data if isinstance(data, dict) else {}
+    except (FileNotFoundError, OSError, ValueError):
+        return {}
+
+
+def save_config(config: "DemoConfig", spark) -> str:
+    """Persiste a configuração no Workspace do usuário (chamado por `00_setup`).
+
+    Os demais notebooks usam esse arquivo como *default* ao criar widgets.
+    Retorna o caminho do arquivo gravado.
+    """
+    path = _config_file_path(spark)
+    payload = {
+        "catalog": config.catalog,
+        "schema": config.schema,
+        "endpoint_name": config.endpoint_name,
+        "snapshot_date": config.snapshot_date.isoformat(),
+    }
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as f:
+        json.dump(payload, f, indent=2)
+    return path
+
 # COMMAND ----------
 # DBTITLE 1,Widgets e resolução
 
 def get_widgets(dbutils, spark) -> None:
-    """Cria os widgets padrão da demo. Chamar na primeira célula de código."""
+    """Cria os widgets padrão da demo. Chamar na primeira célula de código.
+
+    Usa a configuração persistida pelo `00_setup` (se existir) como *default*.
+    Assim, após o setup inicial, basta abrir os demais notebooks e rodar.
+    """
     user_short = _short_user(_current_user(spark))
-    dbutils.widgets.text("catalog", "", "Catálogo Unity Catalog")
+    saved = _load_saved_config(spark)
     dbutils.widgets.text(
-        "schema", f"automl_demo_{user_short}", "Schema do participante"
+        "catalog",
+        saved.get("catalog", ""),
+        "Catálogo Unity Catalog",
+    )
+    dbutils.widgets.text(
+        "schema",
+        saved.get("schema", f"automl_demo_{user_short}"),
+        "Schema do participante",
     )
     dbutils.widgets.text(
         "endpoint_name",
-        f"automl-reactivation-{user_short}",
+        saved.get("endpoint_name", f"automl-reactivation-{user_short}"),
         "Nome do endpoint Model Serving",
     )
     dbutils.widgets.text(
-        "snapshot_date", "", "Data de corte (YYYY-MM-DD; vazio = auto)"
+        "snapshot_date",
+        saved.get("snapshot_date", ""),
+        "Data de corte (YYYY-MM-DD; vazio = auto)",
     )
 
 
@@ -113,7 +167,9 @@ def resolve_config(dbutils, spark) -> DemoConfig:
     if not catalog:
         raise ValueError(
             "Widget 'catalog' obrigatório. Informe o catálogo Unity Catalog "
-            "onde o schema da demo deve ser criado."
+            "onde o schema da demo deve ser criado e rode o notebook "
+            "`00_setup` primeiro — ele persiste a configuração para os "
+            "demais notebooks."
         )
     schema = dbutils.widgets.get("schema").strip()
     endpoint_name = dbutils.widgets.get("endpoint_name").strip()
