@@ -85,14 +85,14 @@ Problemas comuns ao rodar a demo, em ordem aproximada de probabilidade.
 
 ---
 
-## 8. Chamada REST retorna 401 Unauthorized
+## 8. Chamada ao endpoint falha com PermissionDenied / 401
 
-**Sintoma**: a célula final de `06_model_serving` falha com 401.
+**Sintoma**: a célula final de `06_model_serving` (`w.serving_endpoints.query(...)`) lança `PermissionDenied`, `Unauthorized` ou erro HTTP 401.
 
-**Causa**: o token capturado do contexto do notebook expirou ou não tem permissão no endpoint.
+**Causa**: a credencial do notebook expirou (cluster ocioso por muito tempo) ou seu usuário não tem permissão de query no endpoint.
 
 **Solução**:
-- Reanexe o notebook ao cluster e rode de novo.
+- Reanexe o notebook ao cluster e rode de novo (renova a credencial do contexto).
 - Verifique que você é o owner ou tem `Can Query` no endpoint (UI → Serving → Permissions).
 
 ---
@@ -114,7 +114,7 @@ Problemas comuns ao rodar a demo, em ordem aproximada de probabilidade.
 **Causa**: Inference Tables têm latência de logging de **5-10 minutos** após a primeira chamada ao endpoint. A tabela só é criada quando o primeiro batch de logs é flushado.
 
 **Solução**:
-- Faça mais 2-3 chamadas ao endpoint (basta rerodar a célula REST de `06_model_serving`).
+- Faça mais 2-3 chamadas ao endpoint (basta rerodar a célula de chamada do endpoint em `06_model_serving`).
 - Aguarde 5-10 minutos.
 - Rode `07_monitoring` de novo.
 

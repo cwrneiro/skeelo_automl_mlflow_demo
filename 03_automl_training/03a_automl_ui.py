@@ -15,6 +15,25 @@
 # MAGIC **Próximo notebook**: `04_model_registry/04_model_registry`.
 
 # COMMAND ----------
+# MAGIC %md
+# MAGIC > **AVISO — disponibilidade do AutoML nas próximas versões do runtime**
+# MAGIC >
+# MAGIC > Esta demo é validada em **DBR 17.3 LTS ML**, onde o AutoML vem
+# MAGIC > pré-instalado tanto na UI quanto via biblioteca `databricks.automl`.
+# MAGIC >
+# MAGIC > A partir do **DBR 18.0 ML**, o AutoML **deixa de ser uma biblioteca
+# MAGIC > built-in** do runtime. Para continuar usando o fluxo deste notebook
+# MAGIC > em DBR 18.0 ML+ será necessário instalar manualmente o pacote do PyPI
+# MAGIC > **`databricks-automl-runtime`** no cluster (ou notebook):
+# MAGIC >
+# MAGIC > ```python
+# MAGIC > %pip install databricks-automl-runtime
+# MAGIC > dbutils.library.restartPython()
+# MAGIC > ```
+# MAGIC >
+# MAGIC > Em DBR 17.3 LTS ML, **não faça nada** — o pacote já vem incluso.
+
+# COMMAND ----------
 
 # MAGIC %run ../config/demo_config
 

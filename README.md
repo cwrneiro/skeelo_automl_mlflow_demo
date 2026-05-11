@@ -81,7 +81,6 @@ Cada notebook abre com 4 widgets criados por `config/demo_config.py`:
 Para alterar a configuração global (ex: trocar de catálogo no meio da demo), volte ao `00_setup`, ajuste os widgets e rode-o de novo.
 
 Detalhes do contrato (schemas das tabelas, definição do label, convenções) em [`docs/contracts.md`](docs/contracts.md).
-Contexto e decisões do projeto em [`docs/briefing.md`](docs/briefing.md).
 Erros comuns em [`docs/troubleshooting.md`](docs/troubleshooting.md).
 
 ---
@@ -118,7 +117,7 @@ Sem o teardown, o endpoint provisionado fica rodando até ser deletado manualmen
 07_monitoring/           # queries nas inference tables, drift básico
 99_teardown/             # destrói endpoint + (opcional) schema
 config/                  # demo_config.py — contratos e helpers
-docs/                    # briefing, contracts, troubleshooting
+docs/                    # contracts, troubleshooting
 ```
 
 ---

@@ -173,28 +173,17 @@ print(f"State.config_update : {getattr(state, 'config_update', None)}")
 
 # COMMAND ----------
 # MAGIC %md
-# MAGIC ## Chamada REST de teste
+# MAGIC ## Chamada de teste ao endpoint
 # MAGIC
 # MAGIC Vamos enviar 3 linhas (sem `user_id` e sem o label) ao endpoint via
-# MAGIC `POST /serving-endpoints/<nome>/invocations`. O payload segue o
-# MAGIC formato `dataframe_split` aceito por modelos pyfunc / sklearn /
-# MAGIC LightGBM, que é o que o AutoML produz por padrão.
-# MAGIC
-# MAGIC O token e o host vêm do contexto do notebook — não há credenciais
-# MAGIC hardcoded.
+# MAGIC `WorkspaceClient.serving_endpoints.query()` — o método canônico do
+# MAGIC Databricks SDK para chamar Model Serving. Ele cuida da autenticação
+# MAGIC (host e token vêm do contexto do notebook) e da serialização do
+# MAGIC payload `dataframe_split`, formato aceito por modelos pyfunc /
+# MAGIC sklearn / LightGBM (o que o AutoML produz por padrão).
 
 # COMMAND ----------
-# DBTITLE 1,Chamada REST
-
-import requests
-import json
-
-ctx = dbutils.notebook.entry_point.getDbutils().notebook().getContext()
-token = ctx.apiToken().get()
-host = ctx.apiUrl().get()
-
-url = f"{host}/serving-endpoints/{config.endpoint_name}/invocations"
-print(f"POST {url}")
+# DBTITLE 1,Chamada via Databricks SDK
 
 sample = (
     spark.table(config.table(TABLE_CUSTOMER_FEATURES))
@@ -204,21 +193,19 @@ sample = (
 )
 print(f"Amostra: {sample.shape}, cols={list(sample.columns)}")
 
-payload = {"dataframe_split": sample.to_dict(orient="split")}
+split = sample.to_dict(orient="split")
 
-r = requests.post(
-    url,
-    headers={
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json",
+# `dataframe_split` é o formato canônico para modelos pyfunc/tabulares.
+# O SDK monta a request, autentica e devolve a resposta já parseada.
+response = w.serving_endpoints.query(
+    name=config.endpoint_name,
+    dataframe_split={
+        "columns": split["columns"],
+        "data": split["data"],
     },
-    data=json.dumps(payload),
-    timeout=60,
 )
-r.raise_for_status()
 
-print("HTTP", r.status_code)
-print("Response:", r.json())
+print("Predictions:", response.predictions)
 
 # COMMAND ----------
 # MAGIC %md
