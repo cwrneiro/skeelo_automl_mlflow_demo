@@ -32,9 +32,38 @@
 # MAGIC %run ../config/demo_config
 
 # COMMAND ----------
-# DBTITLE 1,Carregar configuração
+# DBTITLE 1,Criar widgets
 
+# Cria os 4 widgets no topo do notebook. Na primeira execução, todos vêm
+# vazios (exceto schema/endpoint_name, que têm defaults derivados do seu
+# usuário). É **aqui** que você preenche `catalog` — sem ele, a próxima
+# célula sai com aviso para você completar e re-rodar.
 get_widgets(dbutils, spark)
+print(
+    "Widgets criados no topo do notebook. Antes de seguir:\n"
+    "  - Preencha o widget 'catalog' com um catálogo Unity Catalog onde\n"
+    "    você tenha USE CATALOG + CREATE SCHEMA (obrigatório).\n"
+    "  - Opcionalmente ajuste 'schema', 'endpoint_name' e 'snapshot_date'\n"
+    "    (têm defaults razoáveis).\n"
+    "  - Depois rode a próxima célula para resolver e validar a configuração."
+)
+
+# COMMAND ----------
+# DBTITLE 1,Resolver configuração
+
+# Guard amigável para a primeira execução: se o widget 'catalog' está vazio,
+# saímos limpo via `dbutils.notebook.exit` em vez de propagar exceção. Assim
+# o usuário vê uma mensagem clara em vez de stack trace, e basta preencher o
+# widget e rodar esta célula de novo.
+if not dbutils.widgets.get("catalog").strip():
+    msg = (
+        "Widget 'catalog' está vazio. Preencha-o no topo do notebook com "
+        "um catálogo Unity Catalog (você precisa de USE CATALOG + "
+        "CREATE SCHEMA) e rode esta célula novamente."
+    )
+    print(f"[AVISO] {msg}")
+    dbutils.notebook.exit(msg)
+
 config = resolve_config(dbutils, spark)
 print("Configuração resolvida:")
 print(f"  catalog       = {config.catalog}")

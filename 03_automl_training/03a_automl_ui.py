@@ -64,129 +64,142 @@ print(f"  Excluir da feature   : user_id  (é PK, não tem sinal)")
 # MAGIC - A tabela `customer_features` precisa existir — ou seja, o notebook
 # MAGIC   `02_eda/02_eda` já foi executado.
 # MAGIC
-# MAGIC No Databricks atual, o produto se chama **Mosaic AutoML**, mas o fluxo
-# MAGIC pela UI continua sendo iniciado em **Experiments → Create AutoML
-# MAGIC Experiment**.
+# MAGIC No Databricks atual, o produto se chama **Mosaic AutoML**, e o fluxo
+# MAGIC pela UI é iniciado em **Experiments → Classification** (já entra com
+# MAGIC o tipo de problema pré-selecionado).
 
 # COMMAND ----------
 # MAGIC %md
 # MAGIC ## Passo 1 — Abrir o formulário de AutoML
 # MAGIC
-# MAGIC Na barra lateral do workspace, vá em uma das opções abaixo (qualquer
-# MAGIC uma chega ao mesmo formulário):
+# MAGIC Na barra lateral do workspace, vá em **Experiments** (1) e clique no
+# MAGIC tile **Classification** (2). O tipo de problema (`Classification`) já
+# MAGIC fica selecionado pelo próprio ponto de entrada, então você cai direto
+# MAGIC no formulário com seções: *Compute*, *Dataset*, *Prediction target* e
+# MAGIC *Advanced configuration*.
 # MAGIC
-# MAGIC 1. **Experiments → Create AutoML Experiment**, **ou**
-# MAGIC 2. **Machine Learning → Experiments → Create AutoML Experiment**.
-# MAGIC
-# MAGIC Você verá um formulário com seções: *Compute*, *ML problem type*,
-# MAGIC *Dataset*, *Prediction target* e *Advanced configuration*.
+# MAGIC ![Experiments → Classification](../docs/img/03a_step1_experiments_classification.png)
 
 # COMMAND ----------
 # MAGIC %md
-# MAGIC ## Passo 2 — Compute
+# MAGIC ## Passo 2 — Configurar o experimento
 # MAGIC
-# MAGIC No campo *Compute*, selecione um **cluster clássico em modo
-# MAGIC single-user** rodando **DBR 17.3 LTS ML**.
+# MAGIC Você cai na tela **Configure Classification Experiment**. Os 5 campos
+# MAGIC numerados na imagem são todos preenchidos aqui — os valores exatos já
+# MAGIC foram impressos na célula "Imprimir os nomes que você vai usar na UI"
+# MAGIC lá em cima.
 # MAGIC
-# MAGIC - Single-user é obrigatório para AutoML acessar Unity Catalog.
-# MAGIC - **Não use** clusters *shared*, *no-isolation* ou *serverless* —
-# MAGIC   o AutoML clássico precisa de um cluster persistente.
-# MAGIC - Se não houver um cluster compatível, crie um novo com runtime
-# MAGIC   `ML 17.3 LTS` antes de continuar.
+# MAGIC ![Configure Classification Experiment](../docs/img/03a_step2_configure_form.png)
+# MAGIC
+# MAGIC 1. **Cluster** — selecione um cluster **clássico single-user** com
+# MAGIC    **DBR 17.3 LTS ML**. AutoML **não roda** em compute serverless nem
+# MAGIC    em clusters *shared / no-isolation*. Se não tiver um compatível,
+# MAGIC    crie antes de seguir.
+# MAGIC 2. **Input training dataset** — clique em *Browse* e selecione a
+# MAGIC    tabela `customer_features` no seu schema. O nome completo é o
+# MAGIC    impresso acima como `Dataset (UC table)`.
+# MAGIC 3. **Prediction target** — selecione `will_reactivate` (impresso como
+# MAGIC    `Prediction target`).
+# MAGIC 4. **Experiment name** — pode deixar o default, mas a sugestão
+# MAGIC    impressa acima inclui seu `user_short` e facilita encontrar o
+# MAGIC    experimento depois.
+# MAGIC 5. **Schema (painel da direita)** — desmarque o checkbox **Include**
+# MAGIC    da coluna `user_id`. É a chave primária da feature table, não tem
+# MAGIC    sinal preditivo, e a cardinalidade altíssima degradaria os modelos.
+# MAGIC    (Esse painel substituiu o antigo campo "Excluded columns" do
+# MAGIC    Advanced Configuration.)
 
 # COMMAND ----------
 # MAGIC %md
-# MAGIC ## Passo 3 — ML problem type
+# MAGIC ## Passo 3 — Advanced Configuration e iniciar
 # MAGIC
-# MAGIC Selecione **`Classification`**.
+# MAGIC Continuando a mesma tela, agora cobrimos os passos numerados 6 a 9 da
+# MAGIC imagem (a numeração segue de onde o Passo 2 parou).
 # MAGIC
-# MAGIC O label `will_reactivate` é binário (0/1), então é classificação
-# MAGIC binária. Não selecione *Regression* nem *Forecasting*.
+# MAGIC ![Advanced Configuration e Start AutoML](../docs/img/03a_step3_advanced_config_and_start.png)
+# MAGIC
+# MAGIC 6. **Advanced Configuration (optional)** — clique no header pra
+# MAGIC    expandir a seção. Vem recolhida por padrão.
+# MAGIC 7. **Evaluation metric** — já vem `F1 score` por padrão, que é
+# MAGIC    adequada para o nosso label binário desbalanceado. Você pode
+# MAGIC    trocar por `ROC AUC` se preferir; **evite `accuracy`** — com
+# MAGIC    desbalanceamento de classes ela engana.
+# MAGIC 8. **Timeout (minutes)** — coloque `15`. Budget maior produz modelos
+# MAGIC    melhores mas demora mais; `10–15` é suficiente pra demo.
+# MAGIC 9. **Start AutoML** — clique no botão no canto inferior esquerdo. O
+# MAGIC    formulário fecha e você é redirecionado para a página de progresso
+# MAGIC    do experimento.
+# MAGIC
+# MAGIC Os demais campos (Experiment directory, Training frameworks,
+# MAGIC Positive label, Time column, Intermediate data storage) ficam com os
+# MAGIC valores padrão. Ao clicar em Start AutoML, o formulário fecha e você é
+# MAGIC redirecionado para a página de progresso do experimento — coberta no
+# MAGIC próximo passo.
 
 # COMMAND ----------
 # MAGIC %md
-# MAGIC ## Passo 4 — Dataset
+# MAGIC ## Passo 4 — Acompanhar o experimento rodando
 # MAGIC
-# MAGIC Em *Dataset*, escolha **Unity Catalog table** e digite/selecione a
-# MAGIC tabela. O nome exato — copie o que foi impresso na primeira célula:
-
-# COMMAND ----------
-
-print(config.table(TABLE_CUSTOMER_FEATURES))
-
-# COMMAND ----------
-# MAGIC %md
-# MAGIC ## Passo 5 — Prediction target
+# MAGIC Logo após o Start AutoML, você cai na página de progresso do
+# MAGIC experimento. Ela mostra, em tempo real, os trials sendo criados e
+# MAGIC avaliados.
 # MAGIC
-# MAGIC Em *Prediction target*, selecione a coluna alvo. O nome exato:
-
-# COMMAND ----------
-
-print(LABEL_COLUMN)
-
-# COMMAND ----------
-# MAGIC %md
-# MAGIC ## Passo 6 — Experiment name (opcional)
+# MAGIC ![Experimento em execução](../docs/img/03a_step4_training_in_progress.png)
 # MAGIC
-# MAGIC Você pode deixar o nome padrão ou usar a sugestão abaixo. Um nome com
-# MAGIC seu user_short facilita encontrar o experimento depois.
-
-# COMMAND ----------
-
-print(f"automl_reactivation_{config.user_short}")
-
-# COMMAND ----------
-# MAGIC %md
-# MAGIC ## Passo 7 — Advanced configuration
+# MAGIC Pontos que valem atenção nessa tela:
 # MAGIC
-# MAGIC Abra a seção *Advanced configuration* e ajuste:
+# MAGIC - **Progresso (Configure → Train → Evaluate)**: a etapa *Train* fica
+# MAGIC   ativa enquanto o budget de timeout não esgota.
+# MAGIC - **Overview** confirma o que você configurou: training dataset,
+# MAGIC   target column, evaluation metric (`val_f1_score`) e timeout.
+# MAGIC - **Stop experiment**: dá pra interromper antes do timeout se já
+# MAGIC   tiver um resultado bom o bastante.
+# MAGIC - **Lista de runs (parte inferior)**: cada linha é um trial do
+# MAGIC   AutoML — `lightgbm`, `xgboost`, `sklearn` com diferentes
+# MAGIC   hiperparâmetros. À medida que os trials terminam, a coluna de
+# MAGIC   métrica (`test_f1_score`) vai sendo preenchida. Use o sort por essa
+# MAGIC   coluna para ver o líder corrente.
+# MAGIC - O run **`Training Data Storage and Exploration`** aparece logo no
+# MAGIC   início — é o notebook de EDA automática gerado pelo AutoML, com
+# MAGIC   estatísticas, missing e correlações da feature table.
 # MAGIC
-# MAGIC - **Timeout (minutes)**: `10` a `15` minutos para a demo. Um budget
-# MAGIC   maior produz modelos melhores mas demora mais.
-# MAGIC - **Evaluation metric**: deixe o padrão (**F1** ou **ROC AUC**) — são
-# MAGIC   adequadas para classificação binária com classes desbalanceadas.
-# MAGIC   Evite *accuracy* aqui.
-# MAGIC - **Excluded columns**: adicione **`user_id`**. É a chave primária da
-# MAGIC   feature table e não carrega sinal preditivo (e cardinalidade muito
-# MAGIC   alta degradaria os modelos).
-# MAGIC - **Positive label** (opcional): `1`.
-# MAGIC
-# MAGIC Você pode deixar os demais campos (data dir, frameworks excluídos,
-# MAGIC imputers) com os valores padrão.
+# MAGIC Você não precisa ficar parado olhando: a página atualiza sozinha. Vá
+# MAGIC para o **Passo 5** quando a etapa *Evaluate* ficar ativa (ou quando
+# MAGIC você der Stop).
 
 # COMMAND ----------
 # MAGIC %md
-# MAGIC ## Passo 8 — Start AutoML
+# MAGIC ## Passo 5 — Localizar o resultado
 # MAGIC
-# MAGIC Clique em **Start AutoML**. O que esperar enquanto roda:
+# MAGIC Quando o experimento termina, o progresso fica **Configure ✓ → Train
+# MAGIC ✓ → Evaluate ✓** e o Overview mostra **AutoML Evaluation: complete**.
 # MAGIC
-# MAGIC 1. O AutoML faz **data exploration** automática e gera um notebook de
-# MAGIC    *Data Exploration* (estatísticas, missing, correlações).
-# MAGIC 2. Em paralelo, treina **vários trials** com diferentes algoritmos
-# MAGIC    (`scikit-learn`, `xgboost`, `lightgbm`) e hiperparâmetros.
-# MAGIC 3. Cada trial é registrado como um run MLflow no experimento criado.
-# MAGIC 4. Ao final, você terá:
-# MAGIC    - O **best trial** marcado na UI do experimento.
-# MAGIC    - Um **notebook de código gerado** para o melhor trial — totalmente
-# MAGIC      reproduzível e editável.
-# MAGIC    - O **Data Exploration notebook** com a EDA automática.
-
-# COMMAND ----------
-# MAGIC %md
-# MAGIC ## Passo 9 — Localizar o resultado
+# MAGIC ![Experimento finalizado](../docs/img/03a_step5_experiment_complete.png)
 # MAGIC
-# MAGIC Depois que o AutoML terminar:
+# MAGIC Dois elementos importam aqui:
 # MAGIC
-# MAGIC 1. Abra o **experimento** (link no topo da página de progresso).
-# MAGIC 2. Ordene os runs pela métrica primária (F1 ou ROC AUC) — o **best
-# MAGIC    run** já vem marcado.
-# MAGIC 3. Clique no best run e **copie o `Run ID`** (canto superior).
-# MAGIC 4. Opcional: abra o **Source notebook** gerado para ver o código
-# MAGIC    exato do modelo vencedor.
+# MAGIC - **Melhor modelo** — o painel *Model with best val_f1_score* tem o
+# MAGIC   botão **View notebook for best model**. Esse notebook é gerado
+# MAGIC   automaticamente, contém o código exato do trial vencedor (features,
+# MAGIC   pré-processamento, hiperparâmetros, fit) e é totalmente
+# MAGIC   reproduzível / editável. Vale dar uma olhada como referência.
+# MAGIC - **Runs** — a tabela na parte inferior lista todos os trials. Você
+# MAGIC   pode ordenar por `val_f1_score` ou `test_f1_score` para ver o
+# MAGIC   ranking e clicar em qualquer run para inspecionar métricas,
+# MAGIC   parâmetros e artefatos.
 # MAGIC
-# MAGIC Anote esse `Run ID` — você vai colar no widget `run_id` do notebook
-# MAGIC `04_model_registry`, que faz o registro do modelo em UC com o alias
-# MAGIC `Champion`.
+# MAGIC ### Pegar o run_id do best trial
+# MAGIC
+# MAGIC O próximo notebook (`04_model_registry`) precisa do `run_id` do best
+# MAGIC trial para registrar o modelo em UC. Você tem duas opções:
+# MAGIC
+# MAGIC 1. **Manual** — clique no melhor run da tabela (linha do topo após
+# MAGIC    ordenar por `val_f1_score`) e copie o `Run ID` do canto superior
+# MAGIC    direito. Cole no widget `run_id` do `04_model_registry`.
+# MAGIC 2. **Automático** — deixe o widget `run_id` do `04_model_registry`
+# MAGIC    vazio: o notebook busca sozinho o experimento mais recente cujo
+# MAGIC    nome contém seu `user_short` e seleciona o melhor run por
+# MAGIC    `val_f1_score`.
 
 # COMMAND ----------
 # DBTITLE 1,Listar experimentos AutoML do seu usuário
